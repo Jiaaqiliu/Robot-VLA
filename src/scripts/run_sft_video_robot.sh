@@ -1,4 +1,16 @@
-cd src/r1-v
+#!/bin/bash
+
+# Change to the script directory
+cd "$(dirname "$0")"
+cd ../r1-v
+
+# Source the local configuration file
+if [ -f "../scripts/config.local.sh" ]; then
+    source "../scripts/config.local.sh"
+else
+    echo "Error: config.local.sh not found. Please copy config.template.sh to config.local.sh and modify it according to your environment."
+    exit 1
+fi
 
 export DEBUG_MODE="true" # Enable Debug if you want to see the rollout of model during RL
 export LOG_PATH="./debug_log_2b.txt"
@@ -12,8 +24,8 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node="4" \
     --master_port="12349" \
     src/open_r1/sft_video.py \
     --output_dir "./log/Qwen2.5-VL-3B-Video-3B-cot-sft" \
-    --model_name_or_path "Qwen/Qwen2.5-VL-3B-Instruct" \
-    --dataset_name "/home/jqliu/Myprojects/RoboBrain/ShareRobot/planning/jsons/planning_task.json" \
+    --model_name_or_path "${MODEL_PATH}" \
+    --dataset_name "${DATASET_PATH}" \
     --deepspeed local_scripts/zero2.json \
     --per_device_train_batch_size 1 \
     --gradient_accumulation_steps 2 \
