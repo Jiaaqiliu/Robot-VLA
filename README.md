@@ -1,11 +1,7 @@
 # Robot-R1
 
-[[📖 Paper](https://arxiv.org/pdf/2503.21776)] [[🤗 Video-R1-7B-model](https://huggingface.co/Video-R1/Video-R1-7B)] [[🤗 Video-R1-train-data](https://huggingface.co/datasets/Video-R1/Video-R1-data)] 
-[[🤖 Video-R1-7B-model](https://modelscope.cn/models/Video-R1/Video-R1-7B)]  [[🤖 Video-R1-train-data](https://modelscope.cn/datasets/Video-R1/Video-R1-data)]
 
-
-
-## 👀 About Video-R1
+## 👀 About R1
 
 Inspired by DeepSeek-R1's success in eliciting reasoning abilities through rule-based RL, we introduce Video-R1 as **the first work to *systematically* explore the R1 paradigm for eliciting video reasoning** within MLLMs. 
 
@@ -15,11 +11,6 @@ Our Video-R1-7B obtain strong performance on several video reasoning benchmarks.
 
 Video-R1-7B **can be easily trained** using 4 H20 (96GB) GPUs, or 5 A100 (80G) GPUs.
 
-
-
-## 🔥 News
-- [2025/03/28] We release our paper, codes, model weights, and two curated training datasets in huggingface🤗 and modelscope🤖.
-- [2025/02/23] We release the preliminary version of Video-R1, you can refer to `./previous_version` for this version.
 
 ## 📍 Features
 
