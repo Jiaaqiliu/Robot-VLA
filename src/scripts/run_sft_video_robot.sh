@@ -15,7 +15,7 @@ fi
 export DEBUG_MODE="true" # Enable Debug if you want to see the rollout of model during RL
 export LOG_PATH="./debug_log_2b.txt"
 # Add base path for video data
-export VIDEO_BASE_PATH="/home/jqliu/Myprojects/RoboBrain/ShareRobot/planning/Video_data/planning_task"
+export VIDEO_BASE_PATH="${VIDEO_BASE_PATH}"
 
 CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node="4" \
     --nnodes="1" \

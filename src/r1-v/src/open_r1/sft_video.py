@@ -104,9 +104,9 @@ def prepare_dataset(example: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
                 print(f"Warning: Could not open video file: {full_video_path}")
                 return None
             frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            if frame_count < 2:  # Skip videos with less than 2 frames
-                print(f"Warning: Video has insufficient frames: {full_video_path}")
-                return None
+            # if frame_count < 2:  # Skip videos with less than 2 frames
+            #     print(f"Warning: Video has insufficient frames: {full_video_path}")
+            #     return None
             cap.release()
         except Exception as e:
             print(f"Error checking video file {full_video_path}: {str(e)}")
