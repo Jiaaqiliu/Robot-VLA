@@ -84,10 +84,7 @@ def download_video(url: str, folder: str = '/tmp/videos/') -> str:
 def prepare_dataset(example: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
     """Prepare dataset example for training."""
 
-    
-
     system_message = "You are a helpful assistant"
-    
     
     QUESTION_TEMPLATE = (
         "{Question}\n"
@@ -105,8 +102,6 @@ def prepare_dataset(example: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
         "regression": " Please provide the numerical value (e.g., 42 or 3.14) within the <answer> </answer> tags."
     }
 
-
-    
     if example["problem_type"] == 'multiple choice':
         question = example['problem'] + "Options:\n"
         for op in example["options"]:
@@ -114,6 +109,12 @@ def prepare_dataset(example: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
     else:
         question = example['problem']
 
+    # Get video base path from environment variable
+    video_base_path = os.environ.get('VIDEO_BASE_PATH', '')
+    video_path = example['path']
+    if video_path.startswith('/'):
+        video_path = video_path[1:]  # Remove leading slash if exists
+    full_video_path = os.path.join(video_base_path, video_path)
 
     messages = [
         {
@@ -125,9 +126,7 @@ def prepare_dataset(example: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
             "content": [
                 {
                     "type": example['data_type'],
-                    example['data_type']: os.getcwd() + "/Video-R1-data" + example['path'][1:]
-                    # "max_pixels": 360*420,
-                    # "fps": 1.0
+                    example['data_type']: full_video_path
                 },
                 {
                     "type": "text",
@@ -140,7 +139,6 @@ def prepare_dataset(example: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
             "content": [{"type": "text", "text": example['process'] + "\n" + example['solution']}]
         }
     ]
-    
 
     return {"messages": messages}
 
