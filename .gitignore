@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.env
+.venv
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Training related
+wandb/
+runs/
+log/
+logs/
+checkpoints/
+*.pth
+*.ckpt
+*.pt
+*.bin
+*.h5
+debug_log*.txt
+
+# Data
+data/
+datasets/
+Video-R1-data/
+*.mp4
+*.avi
+*.mov
+*.webm
+*.json
+!requirements.json
+
+# Misc
+.coverage
+coverage.xml
+*.log
+.pytest_cache/
+.mypy_cache/
+.pyre/
+.pytype/ 
+Robot-VLA-R1/
