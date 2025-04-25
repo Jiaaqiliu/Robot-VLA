@@ -83,101 +83,161 @@ def download_video(url: str, folder: str = '/tmp/videos/') -> str:
 
 def prepare_dataset(example: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
     """Prepare dataset example for training."""
+    try:
+        # Get video base path from environment variable
+        video_base_path = os.environ.get('VIDEO_BASE_PATH', '')
+        video_path = example['path']
+        if video_path.startswith('/'):
+            video_path = video_path[1:]  # Remove leading slash if exists
+        full_video_path = os.path.join(video_base_path, video_path)
+        
+        # Check if video file exists and is valid
+        if not os.path.exists(full_video_path):
+            print(f"Warning: Video file not found at {full_video_path}")
+            return None
+        
+        # Check video validity
+        try:
+            import cv2
+            cap = cv2.VideoCapture(full_video_path)
+            if not cap.isOpened():
+                print(f"Warning: Could not open video file: {full_video_path}")
+                return None
+            frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            if frame_count < 2:  # Skip videos with less than 2 frames
+                print(f"Warning: Video has insufficient frames: {full_video_path}")
+                return None
+            cap.release()
+        except Exception as e:
+            print(f"Error checking video file {full_video_path}: {str(e)}")
+            return None
 
-    system_message = "You are a helpful assistant"
-    
-    QUESTION_TEMPLATE = (
-        "{Question}\n"
-        "Please think about this question as if you were a human pondering deeply. "
-        "Engage in an internal dialogue using expressions such as 'let me think', 'wait', 'Hmm', 'oh, I see', 'let's break it down', etc, or other natural language thought expressions "
-        "It's encouraged to include self-reflection or verification in the reasoning process. "
-        "Provide your detailed reasoning between the <think> </think> tags, and then give your final answer between the <answer> </answer> tags."
-    )
+        system_message = "You are a helpful assistant"
+        
+        QUESTION_TEMPLATE = (
+            "{Question}\n"
+            "Please think about this question as if you were a human pondering deeply. "
+            "Engage in an internal dialogue using expressions such as 'let me think', 'wait', 'Hmm', 'oh, I see', 'let's break it down', etc, or other natural language thought expressions "
+            "It's encouraged to include self-reflection or verification in the reasoning process. "
+            "Provide your detailed reasoning between the <think> </think> tags, and then give your final answer between the <answer> </answer> tags."
+        )
 
-    TYPE_TEMPLATE = {
-        "multiple choice": " Please provide only the single option letter (e.g., A, B, C, D, etc.) within the <answer> </answer> tags.",
-        "numerical": " Please provide the numerical value (e.g., 42 or 3.14) within the <answer> </answer> tags.",
-        "OCR": " Please transcribe text from the image/video clearly and provide your text answer within the <answer> </answer> tags.",
-        "free-form": " Please provide your text answer within the <answer> </answer> tags.",
-        "regression": " Please provide the numerical value (e.g., 42 or 3.14) within the <answer> </answer> tags."
-    }
-
-    if example["problem_type"] == 'multiple choice':
-        question = example['problem'] + "Options:\n"
-        for op in example["options"]:
-            question += op + "\n"
-    else:
-        question = example['problem']
-
-    # Get video base path from environment variable
-    video_base_path = os.environ.get('VIDEO_BASE_PATH', '')
-    video_path = example['path']
-    if video_path.startswith('/'):
-        video_path = video_path[1:]  # Remove leading slash if exists
-    full_video_path = os.path.join(video_base_path, video_path)
-
-    messages = [
-        {
-            "role": "system",
-            "content": [{"type": "text", "text": system_message}]
-        },
-        {
-            "role": "user",
-            "content": [
-                {
-                    "type": example['data_type'],
-                    example['data_type']: full_video_path
-                },
-                {
-                    "type": "text",
-                    "text": QUESTION_TEMPLATE.format(Question=question) + TYPE_TEMPLATE[example['problem_type']]
-                }
-            ]
-        },
-        {
-            "role": "assistant",
-            "content": [{"type": "text", "text": example['process'] + "\n" + example['solution']}]
+        TYPE_TEMPLATE = {
+            "multiple choice": " Please provide only the single option letter (e.g., A, B, C, D, etc.) within the <answer> </answer> tags.",
+            "numerical": " Please provide the numerical value (e.g., 42 or 3.14) within the <answer> </answer> tags.",
+            "OCR": " Please transcribe text from the image/video clearly and provide your text answer within the <answer> </answer> tags.",
+            "free-form": " Please provide your text answer within the <answer> </answer> tags.",
+            "regression": " Please provide the numerical value (e.g., 42 or 3.14) within the <answer> </answer> tags."
         }
-    ]
 
-    return {"messages": messages}
+        if example["problem_type"] == 'multiple choice':
+            question = example['problem'] + "Options:\n"
+            for op in example["options"]:
+                question += op + "\n"
+        else:
+            question = example['problem']
+
+        messages = [
+            {
+                "role": "system",
+                "content": [{"type": "text", "text": system_message}]
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": example['data_type'],
+                        example['data_type']: full_video_path
+                    },
+                    {
+                        "type": "text",
+                        "text": QUESTION_TEMPLATE.format(Question=question) + TYPE_TEMPLATE[example['problem_type']]
+                    }
+                ]
+            },
+            {
+                "role": "assistant",
+                "content": [{"type": "text", "text": example['process'] + "\n" + example['solution']}]
+            }
+        ]
+
+        return {"messages": messages}
+    except Exception as e:
+        print(f"Error processing example: {str(e)}")
+        return None
 
 def collate_fn(examples: List[Dict[str, Any]]) -> Dict[str, torch.Tensor]:
     """Collate batch of examples for training."""
+    valid_examples = []
+    
+    # Filter out None values (skipped examples)
+    for example in examples:
+        if example is not None:
+            valid_examples.append(example)
+    
+    # If no valid examples in batch, return empty batch
+    if not valid_examples:
+        print("Warning: Entire batch was invalid, returning empty batch")
+        return {
+            "input_ids": torch.zeros((0, 0), dtype=torch.long),
+            "attention_mask": torch.zeros((0, 0), dtype=torch.long),
+            "labels": torch.zeros((0, 0), dtype=torch.long)
+        }
+    
     texts = []
-    # video_inputs = []
-    # image_inputs = []
+    image_inputs = []
+    video_inputs = []
 
-    for i, example in enumerate(examples):
+    for i, example in enumerate(valid_examples):
         try:
-
             texts.append(processor.apply_chat_template(example["messages"], tokenize=False))
-            image_inputs, video_inputs, video_kwargs = process_vision_info(example["messages"], return_video_kwargs=True)
-            
+            img_inputs, vid_inputs, video_kwargs = process_vision_info(example["messages"], return_video_kwargs=True)
+            if img_inputs:
+                image_inputs.extend(img_inputs)
+            if vid_inputs:
+                video_inputs.extend(vid_inputs)
         except Exception as e:
-            raise ValueError(f"Failed to process example {i}: {e}")
+            print(f"Warning: Failed to process example {i}: {e}")
+            continue
 
-    inputs = processor(
-        text=texts,
-        images=image_inputs,
-        videos=video_inputs,
-        return_tensors="pt",
-        padding=True
-    )
+    # If no valid examples after processing
+    if not texts:
+        print("Warning: No valid examples after processing, returning empty batch")
+        return {
+            "input_ids": torch.zeros((0, 0), dtype=torch.long),
+            "attention_mask": torch.zeros((0, 0), dtype=torch.long),
+            "labels": torch.zeros((0, 0), dtype=torch.long)
+        }
 
-    labels = inputs["input_ids"].clone()
-    labels[labels == processor.tokenizer.pad_token_id] = -100
+    try:
+        inputs = processor(
+            text=texts,
+            images=image_inputs,
+            videos=video_inputs,
+            return_tensors="pt",
+            padding=True
+        )
 
-    # Handle visual tokens based on processor type
-    visual_tokens = [151652, 151653, 151656] if isinstance(processor, Qwen2VLProcessor) else [
-        processor.tokenizer.convert_tokens_to_ids(processor.image_token)
-    ]
+        labels = inputs["input_ids"].clone()
+        labels[labels == processor.tokenizer.pad_token_id] = -100
 
-    for visual_token_id in visual_tokens:
-        labels[labels == visual_token_id] = -100
+        # Handle visual tokens based on processor type
+        visual_tokens = [151652, 151653, 151656] if isinstance(processor, Qwen2VLProcessor) else [
+            processor.tokenizer.convert_tokens_to_ids(processor.image_token)
+        ]
 
-    inputs["labels"] = labels
-    return inputs
+        for visual_token_id in visual_tokens:
+            labels[labels == visual_token_id] = -100
+
+        inputs["labels"] = labels
+        return inputs
+    except Exception as e:
+        print(f"Error in final processing: {e}")
+        return {
+            "input_ids": torch.zeros((0, 0), dtype=torch.long),
+            "attention_mask": torch.zeros((0, 0), dtype=torch.long),
+            "labels": torch.zeros((0, 0), dtype=torch.long)
+        }
 
 if __name__ == "__main__":
     # Parse arguments
