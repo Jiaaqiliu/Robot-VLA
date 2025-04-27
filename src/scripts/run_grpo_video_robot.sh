@@ -11,6 +11,11 @@ else
     exit 1
 fi
 
+# Set wandb environment variables
+export WANDB_API_KEY="${WANDB_API_KEY}"
+export WANDB_ENTITY="${WANDB_ENTITY}"
+export WANDB_PROJECT="${WANDB_PROJECT}"
+
 export DEBUG_MODE="true" # Enable Debug if you want to see the rollout of model during RL
 export LOG_PATH="./debug_log_2b.txt"
 # Add base path for video data
@@ -48,4 +53,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --nproc_per_node="8" \
     --beta 0.04 \
     --max_grad_norm 5 \
     --save_only_model false \
-    --num_generations 8  # number of outputs G in grpo, reduce it would lead to faster training and smaller memory cost but higher variance 
+    --num_generations 8 \
+    --report_to wandb \
+    --wandb_project "${WANDB_PROJECT}" \
+    --wandb_entity "${WANDB_ENTITY}" 
