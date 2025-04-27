@@ -409,12 +409,19 @@ class Qwen2VLGRPOTrainer(Trainer):
         input_copy = copy.deepcopy(inputs[0]['prompt'])
         
         input_copy = self.remove_none_from_data(input_copy)
-        
+
+        video_base_path = os.environ.get('VIDEO_BASE_PATH', '')
+        video_path = inputs[0]['path']
+        if video_path.startswith('/'):
+            video_path = video_path[1:]  # Remove leading slash if exists
+        full_video_path = os.path.join(video_base_path, video_path)
+
         if inputs[0]['data_type'] == 'image':
-            input_copy[0]['content'][0]['image'] = os.getcwd() + "/Video-R1-data" + inputs[0]['path'][1:] 
+            # input_copy[0]['content'][0]['image'] = os.getcwd() + "/Video-R1-data" + inputs[0]['path'][1:] 
+            input_copy[0]['content'][0]['video'] = full_video_path
         elif inputs[0]['data_type'] == 'video':
-            input_copy[0]['content'][0]['video'] = os.getcwd() + "/Video-R1-data" + inputs[0]['path'][1:] 
-            
+            # input_copy[0]['content'][0]['video'] = os.getcwd() + "/Video-R1-data" + inputs[0]['path'][1:] 
+            input_copy[0]['content'][0]['video'] = full_video_path
         try:
             image_inputs, video_inputs, video_kwargs = process_vision_info(input_copy, return_video_kwargs=True)
         except Exception as e:
