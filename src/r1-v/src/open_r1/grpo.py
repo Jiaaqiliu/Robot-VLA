@@ -259,7 +259,13 @@ def main(script_args, training_args, model_args):
         else:
             question = example['problem']
 
-        
+        # video_base_path = os.environ.get('VIDEO_BASE_PATH', '')
+        # # print(f"video_base_path: {video_base_path}")
+        # video_path = example['path']
+        # # import pdb; pdb.set_trace()
+        # if video_path.startswith('/'):
+        #     video_path = video_path[1:]  # Remove leading slash if exists
+        # full_video_path = os.path.join(video_base_path, video_path)
         msg ={
             "prompt": 
                [{
@@ -268,6 +274,7 @@ def main(script_args, training_args, model_args):
                         {
                             "type": example['data_type'],
                             # example['data_type']: os.getcwd() + "/Video-R1-data" + example['path'][1:]
+                            # example['data_type']: full_video_path
                         },
                         {
                             "type": "text",
