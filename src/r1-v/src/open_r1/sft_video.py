@@ -56,7 +56,8 @@ from datasets import Dataset, DatasetDict
 
 import wandb
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+import cv2
 
 def get_current_device():
     """Get the current device. For GPU we return the local process index to enable multiple GPU training."""
@@ -81,13 +82,30 @@ def download_video(url: str, folder: str = '/tmp/videos/') -> str:
     except requests.RequestException as e:
         raise Exception(f"Failed to download video: {e}")
 
-def prepare_dataset(example: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
+def check_video_quality(video_path: str) -> bool:
+    """Check if video has sufficient frames (at least 2 frames)"""
+    try:
+        cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            print(f"Warning: Failed to open video file: {video_path}")
+            return False
+        
+        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        cap.release()
+        
+        if frame_count < 2:
+            print(f"Warning: Video has insufficient frames ({frame_count}): {video_path}")
+            return False
+            
+        return True
+    except Exception as e:
+        print(f"Error checking video {video_path}: {str(e)}")
+        return False
+
+def prepare_dataset(example: Dict[str, Any]) -> Optional[Dict[str, List[Dict[str, Any]]]]:
     """Prepare dataset example for training."""
-
     
-
     system_message = "You are a helpful assistant"
-    
     
     QUESTION_TEMPLATE = (
         "{Question}\n"
@@ -105,8 +123,6 @@ def prepare_dataset(example: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
         "regression": " Please provide the numerical value (e.g., 42 or 3.14) within the <answer> </answer> tags."
     }
 
-
-    
     if example["problem_type"] == 'multiple choice':
         question = example['problem'] + "Options:\n"
         for op in example["options"]:
@@ -120,6 +136,10 @@ def prepare_dataset(example: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
     if video_path.startswith('/'):
          video_path = video_path[1:]  # Remove leading slash if exists
     full_video_path = os.path.join(video_base_path, video_path)
+    
+    # Check video quality if it's a video example
+    if example['data_type'] == 'video' and not check_video_quality(full_video_path):
+        return None
  
     messages =[
          {
@@ -239,7 +259,22 @@ if __name__ == "__main__":
     )
 
     # Prepare dataset
-    prepared_dataset = [prepare_dataset(example) for example in dataset['train']]
+    prepared_dataset = []
+    skipped_count = 0
+    total_count = len(dataset['train'])
+
+    print(f"Processing {total_count} examples...")
+    for example in dataset['train']:
+        prepared_example = prepare_dataset(example)
+        if prepared_example is not None:
+            prepared_dataset.append(prepared_example)
+        else:
+            skipped_count += 1
+
+    print(f"\nDataset preparation completed:")
+    print(f"Total examples: {total_count}")
+    print(f"Valid examples: {len(prepared_dataset)}")
+    print(f"Skipped examples: {skipped_count}")
 
     # Initialize wandb if specified
     if training_args.report_to == "wandb":
