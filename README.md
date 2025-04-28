@@ -67,12 +67,12 @@ Interestingly, the response length curve first drops at the beginning of RL trai
 ## 📐 Set up
 
 ```bash
-git clone https://github.com/tulerfeng/Video-R1
-cd Video-R1
+git clone https://github.com/Jiaaqiliu/Robot-VLA
+cd Robot-VLA
 
 # build environment
-conda create -n video-r1 python=3.11 
-conda activate video-r1
+conda create -n robot-r1 python=3.11 
+conda activate robot-r1
 bash setup.sh
 
 # qwen video extraction setting, e.g., max frames, resolutions
@@ -83,18 +83,11 @@ cd ..
 
 # download training dataset
 git lfs install
-git clone https://huggingface.co/datasets/Video-R1/Video-R1-data
+git clone **
 ```
 
-Please put the downloaded dataset to `src/r1-v/Video-R1-data/`
+<!-- Please put the downloaded dataset to `src/r1-v/data` -->
 
-Then, unzip the data
-
-```
-python ./src/unzip.py
-```
-
-The `Video-R1-260k.json` file is for RL training while `Video-R1-COT-165k.json` is for SFT cold start.
 
 Qwen2.5-VL has been frequently updated in the Transformers library, which may cause version-related bugs or inconsistencies. Our code is compatible with the following version, please download at [here](https://drive.google.com/file/d/1Kc81WZitEhUZYWXpL6y2GXuSXufLSYcF/view?usp=sharing)
 
@@ -144,8 +137,6 @@ During inference, we increase the max frame resolution to 256 × 28 × 28 and ma
 For all evaluations, we follow the decoding configuration used in the official Qwen2.5-VL demo, with top\_p = 0.001 and temperature = 0.01. Setting large top_p may encounter messy output when inference.
 
 We recommend using our provided json files and scripts for easier evaluation. 
-
-The json files can be downloaded at: [[🤗 Video-R1-eval](https://huggingface.co/datasets/Video-R1/Video-R1-eval)], put them in `/src/r1-v/Evaluation` 
 
 Next, download the evaluation video data from each benchmark’s official website, and place them in `/src/r1-v/Evaluation` as specified in the provided json files.
 
