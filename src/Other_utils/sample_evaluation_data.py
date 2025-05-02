@@ -61,8 +61,9 @@ def sample_json_data(input_path, output_path, sample_size=1000, seed=42):
 
 if __name__ == "__main__":
     # Define paths
-    input_path = "/home/jqliu/Myprojects/Robot-VLA-R1/planning_task_video_update.json"
-    output_path = "/home/jqliu/Myprojects/Video-R1/src/r1-v/Evaluation/planning_task_evaluation.json"
+    task_name = "future_prediction_task"
+    input_path = f"/home/jqliu/Myprojects/Robot-VLA-R1/{task_name}_video_update.json"
+    output_path = f"/home/jqliu/Myprojects/Video-R1/src/r1-v/Evaluation/eval_{task_name}.json"
     
     # Sample the data
     sample_json_data(input_path, output_path) 
