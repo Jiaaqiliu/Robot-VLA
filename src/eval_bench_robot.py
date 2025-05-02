@@ -79,9 +79,16 @@ for dataset_name in ['planning_task']:
         "regression": " Please provide the numerical value (e.g., 42 or 3.14) within the <answer> </answer> tags."
     }
 
+    # Get video base path from environment variable
+    video_base_path = os.environ.get('VIDEO_BASE_PATH', '')
+
 
     messages = []
     for x in data:
+        video_path = x['path']
+        if video_path.startswith('/'):
+            video_path = video_path[1:]  # Remove leading slash if exists
+        full_video_path = os.path.join(video_base_path, video_path)
         if x["problem_type"] == 'multiple choice':
             question = x['problem'] + "Options:\n"
             for op in x["options"]:
@@ -94,7 +101,7 @@ for dataset_name in ['planning_task']:
             "content": [
                 {
                     "type": x['data_type'],
-                    x['data_type']: os.getcwd() + "/src/r1-v" + x['path'][1:]
+                    x['data_type']: full_video_path
                 },
                 {
                     "type": "text",
