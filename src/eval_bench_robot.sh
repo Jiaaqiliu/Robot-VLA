@@ -10,7 +10,8 @@ file_names=(
 )
 
 export DECORD_EOF_RETRY_MAX=20480
-export VIDEO_BASE_PATH="/home/jqliu/Myprojects/RoboBrain/ShareRobot/planning/Video_data/planning_task"
+# export VIDEO_BASE_PATH="/home/jqliu/Myprojects/RoboBrain/ShareRobot/planning/Video_data/planning_task"
+export VIDEO_BASE_PATH="/home/jqliu/Myprojects/RoboBrain/ShareRobot/planning/Video_data/planning_with_context_task"
 
 
 for i in "${!model_paths[@]}"; do

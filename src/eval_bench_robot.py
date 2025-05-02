@@ -48,7 +48,7 @@ tokenizer.padding_side = "left"
 processor.tokenizer = tokenizer
 
 
-for dataset_name in ['planning_task']:
+for dataset_name in ['planning_with_context_task']: #'planning_task',
 
     OUTPUT_PATH = f"./src/r1-v/eval_results/eval_{dataset_name}_{file_name}_greedy_output.json"
     PROMPT_PATH = f"./src/r1-v/Evaluation/eval_{dataset_name}.json"
